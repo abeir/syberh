@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <qqml.h>
 #include <QSplashScreen>
+#include <QtWebEngine>
+#include <QGuiApplication>
 
 #include "../../vendor/syberh-framework/src/helper.h"
 #include "../../vendor/syberh-framework/src/framework/nativesdkmanager.h"
@@ -16,6 +18,8 @@
 App_Workspace::App_Workspace()
     : CWorkspace()
 {
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    QtWebEngine::initialize();
     // 设置日志级别
     QString devLog = ExtendedConfig::instance()->get(EX_DEV_LOG).toString();
     if(devLog.isEmpty()){
@@ -36,7 +40,6 @@ App_Workspace::App_Workspace()
 
     Helper *helper = Helper::instance();
     m_view->rootContext()->setContextProperty("helper", helper);
-
 
     NativeSdkManager * nativeSdkManager = NativeSdkManager::getInstance();
     m_view->rootContext()->setContextProperty("NativeSdkManager",nativeSdkManager);
