@@ -11,4 +11,4 @@ temp
 .history
 .markdown
 dist/
-templates/default/platforms/syberos/*
+templates/default/platforms/syberos/
