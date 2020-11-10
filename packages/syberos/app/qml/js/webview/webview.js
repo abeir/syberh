@@ -760,6 +760,27 @@ WebView.prototype.onMessageReceived = function (message, webviewId) {
     return;
   }
 
+  //TODO
+  if(module === 'nativeImage'){
+    console.log('>>>>>> ' + module + '  >> ' + method);
+    var nativeObj;
+    if(!this['nativeImage']){
+      console.log('>>>>>>>>>> create NativeImage', this['nativeImage'])
+      nativeObj = new NativeImage(this);
+      this['nativeImage'] = nativeObj;
+    }else{
+      nativeObj = this.nativeImage;
+    }
+    
+    if(typeof nativeObj[method] === 'function'){
+      nativeObj[method].call(nativeObj, handlerId, model.data)
+    }
+    return
+  }
+
+
+
+
   // 因为C++类都为大写开头,所以第一个字母转为大写
   var moduleName = module.charAt(0).toUpperCase() + module.slice(1) + '*';
   NativeSdkManager.request(moduleName, handlerId, method, funcArgs);

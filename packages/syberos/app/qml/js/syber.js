@@ -6,6 +6,7 @@ Qt.include('./core/core.js')
 Qt.include('./core/plugin.js')
 Qt.include('./root/root.js')
 Qt.include('./webview/webview.js')
+Qt.include('./core/native.js')
 
 // 增加对ES6语法的支持
 polyfill()

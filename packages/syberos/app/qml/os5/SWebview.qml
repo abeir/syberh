@@ -261,6 +261,32 @@ CPage{
         setDestroyStatus(true)
     }
 
+    function createImage(data){
+        var properties = {}
+        if(data['width']){
+            properties['width'] = parseInt(data['width'])
+        }
+        if(data['height']){
+            properties['height'] = parseInt(data['height'])
+        }
+        if(data['src']){
+            properties['source'] = data['src']
+        }
+        if(data['offsetTop']){
+            properties['anchors.topMargin'] = data['offsetTop']
+        }
+        if(data['offsetLeft']){
+            properties['anchors.leftMargin'] = data['offsetLeft']
+        }
+        return nativeImage.createObject(swebview, properties)
+    }
+
+    function changeImage(imgObj, data){
+        if(data['src']){
+            imgObj.source = data['src']
+        }
+    }
+
     contentAreaItem:Rectangle{
         id:root
         anchors.fill:parent
@@ -459,6 +485,16 @@ CPage{
               messageAreaItem.passText = "";
             }
         }
+
+        Component {
+            id: nativeImage
+            Image {
+                anchors.top: swebview.top
+                anchors.left: swebview.left
+                z: swebview.z + 1
+            }
+        }
+
     }
 
     // 在页面状态变化的时候，处理状态栏展示or隐藏
