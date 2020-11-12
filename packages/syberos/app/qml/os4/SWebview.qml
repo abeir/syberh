@@ -99,6 +99,10 @@ CPage{
         return sNavigationBar.visible
     }
 
+    function getNavigationBarHeight() {
+        return sNavigationBar.navigationBarHeight
+    }
+
     function clearHistory(){
         //TODO 暂无找到实现方式
     }
@@ -336,8 +340,7 @@ CPage{
                     LOG.logger.error('SWebview qml onLoadingChanged LoadFailedStatus: %s, error: %s', loadRequest.url, failedMessage)
 
                     gToast.requestToast('加载失败: ' + failedMessage);
-                }
-                if(!loading && loadRequest.status===WebEngineView.LoadSucceededStatus){
+                } else {
                     sloadingChanged(loadRequest);
                 }
             }

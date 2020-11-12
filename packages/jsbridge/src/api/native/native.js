@@ -11,7 +11,8 @@ export default function nativeMixin() {
                 width: 0,
                 height: 0,
                 offsetTop: 0,
-                target: ''
+                screenOffsetWidth: document.body.offsetWidth,
+                screenOffsetHeight: document.body.offsetHeight
             }
         },
         {
@@ -21,6 +22,17 @@ export default function nativeMixin() {
                 id: '',
                 src: ''
             }
+        },
+        {
+            namespace: 'remove',
+            os: ['syberos'],
+            defaultParams: {
+                id: ''
+            }
+        },
+        {
+            namespace: 'removeAll',
+            os: ['syberos']
         },
     ]);
 }

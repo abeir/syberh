@@ -22,5 +22,6 @@
         <file>qml/js/util/log.js</file>
         <file>qml/root.qml</file>
         <file>qml/SNavigationBar.qml</file>
+        <file>qml/native/SImage.qml</file>
     </qresource>
 </RCC>

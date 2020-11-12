@@ -680,6 +680,10 @@ function WebView (options) {
           dwebview.trigger('unload', { url: dwebview.object.getCurrentUrl() });
           // 开始注销
           logger.verbose('Webivew:[%s] , 开始destroy', dwebview.id);
+          // 存在nativeImage时，销毁nativeImage
+          if(dwebview.nativeImage){
+            dwebview.nativeImage.destroy();
+          }
           SYBEROS.destroy(dwebview.id);
           logger.verbose('Webivew:[%s] , destroy完成 ,当前数量: %d', dwebview.id, swebviews.length);
         }
@@ -764,7 +768,7 @@ WebView.prototype.onMessageReceived = function (message, webviewId) {
   if(module === 'nativeImage'){
     console.log('>>>>>> ' + module + '  >> ' + method);
     var nativeObj;
-    if(!this['nativeImage']){
+    if(!this.nativeImage){
       console.log('>>>>>>>>>> create NativeImage', this['nativeImage'])
       nativeObj = new NativeImage(this);
       this['nativeImage'] = nativeObj;

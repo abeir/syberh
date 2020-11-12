@@ -99,6 +99,10 @@ CPage{
         return sNavigationBar.visible
     }
 
+    function getNavigationBarHeight() {
+        return sNavigationBar.navigationBarHeight
+    }
+
     function clearHistory(){
         //TODO 暂无找到实现方式
     }
@@ -261,31 +265,6 @@ CPage{
         setDestroyStatus(true)
     }
 
-    function createImage(data){
-        var properties = {}
-        if(data['width']){
-            properties['width'] = parseInt(data['width'])
-        }
-        if(data['height']){
-            properties['height'] = parseInt(data['height'])
-        }
-        if(data['src']){
-            properties['source'] = data['src']
-        }
-        if(data['offsetTop']){
-            properties['anchors.topMargin'] = data['offsetTop']
-        }
-        if(data['offsetLeft']){
-            properties['anchors.leftMargin'] = data['offsetLeft']
-        }
-        return nativeImage.createObject(swebview, properties)
-    }
-
-    function changeImage(imgObj, data){
-        if(data['src']){
-            imgObj.source = data['src']
-        }
-    }
 
     contentAreaItem:Rectangle{
         id:root
@@ -364,8 +343,7 @@ CPage{
                     LOG.logger.error('SWebview qml onLoadingChanged LoadFailedStatus: %s, error: %s', loadRequest.url, failedMessage)
 
                     gToast.requestToast('加载失败: ' + failedMessage);
-                }
-                if(!loading && loadRequest.status===WebEngineView.LoadSucceededStatus){
+                } else {
                     sloadingChanged(loadRequest);
                 }
             }
@@ -483,15 +461,6 @@ CPage{
             function clear(){
               messageAreaItem.nameText = "";
               messageAreaItem.passText = "";
-            }
-        }
-
-        Component {
-            id: nativeImage
-            Image {
-                anchors.top: swebview.top
-                anchors.left: swebview.left
-                z: swebview.z + 1
             }
         }
 

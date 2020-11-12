@@ -35,12 +35,23 @@
             <p>
               Test content
             </p>
-            <div id="image-content" style="width:230px;height:230px"></div>
+            <div id="image-content" style="width:230px;height:230px;background-color: #888888;"></div>
+
+            <div id="origin-image" style="background-color: #888888;">
+              <img src="../../images/stopR.png">
+            </div>
         </div>
       </div>
       <div class="mui-card-footer">
-        <button class="mui-btn mui-btn-outlined" onclick="changeImage()">Change Image</button>
-        <button class="mui-btn mui-btn-outlined" onclick="testChangeImage()">Test Change Image</button>
+        <div>
+          <button class="mui-btn mui-btn-outlined" onclick="createImage()">Create</button>
+          <button class="mui-btn mui-btn-outlined" onclick="changeImage()">Change</button>
+          <button class="mui-btn mui-btn-outlined" onclick="testChangeImage()">Loop</button>
+        </div>
+        <div>
+          <button class="mui-btn mui-btn-outlined" onclick="removeImage()">Remove</button>
+          <button class="mui-btn mui-btn-outlined" onclick="removeAllImage()">Remove All</button>
+        </div>
       </div>
     </div>
   </div>
@@ -50,18 +61,39 @@
   <script type="text/javascript" src="../../common/common.js"></script>
   <script type="text/javascript" src="../../lib/vconsole.min.js"></script>
   <script>
+    var curHeight = 0;
     var imageId;
-    (function(){
+
+    
+
+    window.onload = function(){
       var vConsole = new VConsole();
+      
+      createImage(true);
+
+      syberh.subscribe('onImageEvent', function (result) {
+        console.log(JSON.stringify(result))
+      });
+    }
+
+
+    function createImage(first){
       var imageContent = document.getElementById('image-content');
-      var offsetSize = offset(imageContent);
+      var rect = imageContent.getBoundingClientRect();
+      var computedStyle = window.getComputedStyle(imageContent);
+
+      if(first){
+        curHeight += rect.top;
+      }else{
+        curHeight += parseInt(computedStyle.height);
+      }
 
       syberh.nativeImage.create({
-        src: 'file:///home/user/ScreenShot/20201029185206.png',
-        width: imageContent.style.width,
-        height: imageContent.style.height,
-        offsetTop: offsetSize.top,
-        offsetLeft: offsetSize.left,
+        src: 'file:///data/apps/com.syberos.example/www/images/stopR.png',
+        width: computedStyle.width,
+        height: computedStyle.height,
+        offsetTop: curHeight,
+        offsetLeft: rect.left,
         success: function (result) {
           imageId = result.id
         },
@@ -69,33 +101,40 @@
           console.log(error)
         }
       })
-    })()
-
-
+    }
 
     function changeImage(){
+      if(!imageId){
+        alert('must be create a image first');
+        return;
+      }
       syberh.nativeImage.change({
         id: imageId,
-        src: 'file:///data/apps/com.syberos.example/www/images/playR.png'
+        src: 'file:///data/apps/com.syberos.example/www/images/playR.png',
+        success: function (result) {
+          console.log(result)
+        },
+        fail: function (error) {
+          console.log(error)
+        }
       })
     }
 
     function testChangeImage(){
+      if(!imageId){
+        alert('must be create a image first');
+        return;
+      }
       var images = [
-        'file:///home/user/ScreenShot/20201018214534.png',
-        'file:///home/user/ScreenShot/20201029185159.png',
-        'file:///home/user/ScreenShot/20201029185206.png',
-        'file:///home/user/ScreenShot/20201109192802.png',
-        'file:///home/user/ScreenShot/20201109192807.png',
-        'file:///home/user/ScreenShot/20201109192815.png',
-        'file:///home/user/ScreenShot/20201109192820.png',
-        'file:///home/user/ScreenShot/20201109192825.png',
+        'file:///data/apps/com.syberos.example/www/images/deleteR.png',
+        'file:///data/apps/com.syberos.example/www/images/play.png',
         'file:///data/apps/com.syberos.example/www/images/playR.png',
+        'file:///data/apps/com.syberos.example/www/images/stop.png',
+        'file:///data/apps/com.syberos.example/www/images/stopR.png'
       ]
-
+      var start = new Date().getTime();
       var i = 0;
       setTimeout(function(){
-        var start = new Date().getTime()
         while(true){
           var last = new Date().getTime()
           if(last - start > 10000){
@@ -113,26 +152,31 @@
       })
     }
 
-    function offset(curEle){
-      var totalLeft = null,totalTop = null,par = curEle.offsetParent;
-      //首先把自己本身的进行累加
-      totalLeft += curEle.offsetLeft;
-      totalTop += curEle.offsetTop;
-
-      //只要没有找到body，我们就把父级参照物的边框和偏移量累加
-      while(par){
-              if(navigator.userAgent.indexOf("MSIE 8.0") === -1){
-                  //不是标准的ie8浏览器，才进行边框累加
-                  //累加父级参照物边框
-                  totalLeft += par.clientLeft;
-                  totalTop += par.clientTop;
-              }
-              //累加父级参照物本身的偏移
-              totalLeft += par.offsetLeft;
-              totalTop += par.offsetTop;
-              par = par.offsetParent;
+    function removeImage(){
+      if(!imageId){
+        alert('must be create a image first');
+        return;
       }
-      return {left:totalLeft,top:totalTop};
+      syberh.nativeImage.remove({
+        id: imageId,
+        success: function (result) {
+          console.log(result)
+        },
+        fail: function (error) {
+          console.log(error)
+        }
+      })
+    }
+
+    function removeAllImage(){
+      var imageContent = document.getElementById('image-content');
+
+      syberh.nativeImage.removeAll({
+        success: function (result) {
+          console.log(result)
+          curHeight = parseInt(imageContent.style.height);
+        }
+      })
     }
 
   </script>
