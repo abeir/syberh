@@ -100,7 +100,7 @@ CPage{
     }
 
     function getNavigationBarHeight() {
-        return sNavigationBar.navigationBarHeight
+        return sNavigationBar.visible ? sNavigationBar.navigationBarHeight : 0
     }
 
     function clearHistory(){
@@ -132,7 +132,7 @@ CPage{
 
     //return the swebview
     function getWebview(){
-        return swebview
+        return root
     }
     //Returns true if the HTML page is currently loading, false otherwise.
     function loading(){
@@ -312,7 +312,8 @@ CPage{
             webChannel: channel
 
             profile: WebEngineProfile{
-              httpUserAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3770.100 Mobile Safari/537.36 SyberOS 4.1.1 5.9.6;"
+                httpCacheType: WebEngineProfile.NoCache
+                httpUserAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3770.100 Mobile Safari/537.36 SyberOS 4.1.1 5.9.6;"
             }
 
             onLinkHovered: {

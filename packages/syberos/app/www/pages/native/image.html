@@ -35,7 +35,7 @@
             <p>
               Test content
             </p>
-            <div id="image-content" style="width:230px;height:230px;background-color: #888888;"></div>
+            <div id="image-content" style="width:100%;height:230px;background-color: #888888;"></div>
 
             <div id="origin-image" style="background-color: #888888;">
               <img src="../../images/stopR.png">
@@ -60,14 +60,15 @@
   <script type="text/javascript" src="../../lib/syberh.min.js"></script>
   <script type="text/javascript" src="../../common/common.js"></script>
   <script type="text/javascript" src="../../lib/vconsole.min.js"></script>
+  <script type="text/javascript" src="./nativeImage.js"></script>
   <script>
     var curHeight = 0;
-    var imageId;
-
-    
+    var imageIds = [];
 
     window.onload = function(){
       var vConsole = new VConsole();
+
+      syberh.register(NativeImagePlugin);
       
       createImage(true);
 
@@ -83,7 +84,7 @@
       var computedStyle = window.getComputedStyle(imageContent);
 
       if(first){
-        curHeight += rect.top;
+        curHeight += rect.top + imageContent.scrollTop;
       }else{
         curHeight += parseInt(computedStyle.height);
       }
@@ -92,10 +93,10 @@
         src: 'file:///data/apps/com.syberos.example/www/images/stopR.png',
         width: computedStyle.width,
         height: computedStyle.height,
+        offsetLeft: rect.left + imageContent.scrollTop,
         offsetTop: curHeight,
-        offsetLeft: rect.left,
         success: function (result) {
-          imageId = result.id
+          imageIds.push(result.id)
         },
         fail: function (error) {
           console.log(error)
@@ -104,6 +105,7 @@
     }
 
     function changeImage(){
+      var imageId = imageIds.length > 0 ? imageIds[imageIds.length-1] : 0;
       if(!imageId){
         alert('must be create a image first');
         return;
@@ -121,6 +123,7 @@
     }
 
     function testChangeImage(){
+      var imageId = imageIds.length > 0 ? imageIds[imageIds.length-1] : 0;
       if(!imageId){
         alert('must be create a image first');
         return;
@@ -132,31 +135,39 @@
         'file:///data/apps/com.syberos.example/www/images/stop.png',
         'file:///data/apps/com.syberos.example/www/images/stopR.png'
       ]
-      var start = new Date().getTime();
+      var count = 0;
       var i = 0;
-      setTimeout(function(){
-        while(true){
-          var last = new Date().getTime()
-          if(last - start > 10000){
-            break
-          }
-          if(i >= images.length){
-            i = 0;
-          }
-          syberh.nativeImage.change({
-            id: imageId,
-            src: images[i]
-          })
-          i++;
+      var sid = setInterval(function(){
+        if(count >= 500){
+          clearInterval(sid)
+          return;
         }
-      })
+        count++;
+        if(i >= images.length){
+          i = 0;
+        }
+        syberh.nativeImage.change({
+          id: imageId,
+          src: images[i],
+          success: function(result){
+            console.log('test change', result)
+          }
+        });
+        i++;
+      }, 500);
     }
 
     function removeImage(){
+      var imageId = imageIds.pop();
       if(!imageId){
         alert('must be create a image first');
         return;
       }
+      var imageContent = document.getElementById('image-content');
+      var computedStyle = window.getComputedStyle(imageContent);
+
+      curHeight += parseInt(computedStyle.height);
+
       syberh.nativeImage.remove({
         id: imageId,
         success: function (result) {

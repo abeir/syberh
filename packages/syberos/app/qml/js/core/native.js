@@ -6,27 +6,36 @@ function NativeImage(webview){
 }
 
 NativeImage.prototype.create = function(handlerId, data){
-    console.log('>>>>>>>>>> create: ' + JSON.stringify(data));
+    logger.verbose('NativeImage create ');
 
 
-    var properties = {}
-    if(data['width']){
-        properties['width'] = this._ratio(data['screenOffsetWidth'], data['width']);
+    var properties = { imageId: handlerId };
+    if(data.width){
+        properties.width = this._ratio(data.width);
+        properties['sourceSize.width'] = properties.width;
     }
-    if(data['height']){
-        properties['height'] = this._ratio(data['screenOffsetWidth'], data['height']);
+    if(data.height){
+        properties.height = this._ratio(data.height);
+        properties['sourceSize.height'] = properties.height;
     }
-    if(data['src']){
-        properties['source'] = data['src'];
+    if(data.src){
+        properties.source = data.src;
+        delete data['src']
     }
-    if(data['offsetTop']){
-        properties['anchors.topMargin'] = parseInt(data['offsetTop']) + this.webview.object.getNavigationBarHeight();
+    if(data.x){
+        properties.x = parseInt(data.x) + this.webview.object.getNavigationBarHeight();
     }
-    if(data['offsetLeft']){
-        properties['anchors.leftMargin'] = parseInt(data['offsetLeft']);
+    if(data.y){
+        properties.y = parseInt(data.y);
     }
-
-    console.log('>>>>>>>>> properties:', JSON.stringify(properties));
+    if(data.offsetTop){
+        properties.useArchors = true;
+        properties['anchors.topMargin'] = this._ratio(data.offsetTop) + this.webview.object.getNavigationBarHeight();
+    }
+    if(data.offsetLeft){
+        properties.useArchors = true;
+        properties['anchors.leftMargin'] = this._ratio(data.offsetLeft);
+    }
 
     var component = Qt.createComponent("qrc:/qml/native/SImage.qml");
     if(component.status == Component.Ready){
@@ -36,9 +45,9 @@ NativeImage.prototype.create = function(handlerId, data){
         
         var that = this
         //绑定信号
-        imageObj.imageEvent.connect(function(eventType, eventData){
+        imageObj.imageEvent.connect(function(imageId, eventType, eventData){
             //解决 this指向问题
-            that._subscribe(that.webview, eventType, eventData)
+            that._subscribe(that.webview, imageId, eventType, eventData)
         })
         //监听sloadingChanged信号
         this.webview.object.sloadingChanged.connect(function(loadRequest){
@@ -54,34 +63,68 @@ NativeImage.prototype.create = function(handlerId, data){
 }
 
 NativeImage.prototype.change = function(handlerId, data){
-    console.log('>>>>>>>>>> change: ' + JSON.stringify(data));
+    logger.verbose('NativeImage change ', data.id);
     
-    var imgObj = this._getImage(handlerId, data['id']);
+    var imgObj = this._getImage(data.id);
     if(!imgObj){
+        this._fail(handlerId, 9000, "can't change native image: " + data.id);
         return;
     }
-    if(data['src']){
-        imgObj.source = data['src']
+    if(data.src){
+        imgObj.changeSource(data.src);
+        delete data['src']
+    }else if(!data.src || data.src.length < 20){
+        this._fail(handlerId, 9000, "data.src empty: " + data.id);
+        return;
     }
-    this._success(handlerId, {id:imageId, src: data['src']})
+    this._success(handlerId, {id:data.id})
+}
+
+NativeImage.prototype.hide = function(handlerId, data){
+    logger.verbose('NativeImage hide ', data.id);
+    
+    var imgObj = this._getImage(data.id);
+    if(!imgObj){
+        this._fail(handlerId, 9000, "can't hide native image: " + data.id);
+        return;
+    }
+    if(data.id){
+        imgObj.visible = false
+    }
+    this._success(handlerId, {id:data.id})
+}
+
+NativeImage.prototype.show = function(handlerId, data){
+    logger.verbose('NativeImage show ', data.id);
+    
+    var imgObj = this._getImage(data.id);
+    if(!imgObj){
+        this._fail(handlerId, 9000, "can't show native image: " + data.id);
+        return;
+    }
+    if(data.id){
+        imgObj.visible = true
+    }
+    this._success(handlerId, {id:data.id})
 }
 
 NativeImage.prototype.remove = function(handlerId, data){
-    console.log('>>>>>>>>>> remove: ' + JSON.stringify(data));
+    logger.verbose('NativeImage remove ', data.id);
 
-    var imgObj = this._getImage(handlerId, data['id']);
+    var imgObj = this._getImage(data.id);
     if(!imgObj){
+        this._fail(handlerId, 9000, "can't remove native image: " + data.id);
         return;
     }
     imgObj.destroy();
-    delete this.images[data['id']];
+    delete this.images[data.id];
 
     this._success(handlerId, true)
 }
 
 NativeImage.prototype.removeAll = function(handlerId){
     var removeImageIds = Object.keys(this.images);
-    console.log('>>>>>>>>>> removeAll: ', removeImageIds);
+    logger.verbose('NativeImage removeAll: ', removeImageIds);
 
     var removeCount = 0;
     for(var k in removeImageIds){
@@ -104,51 +147,26 @@ NativeImage.prototype.destroy = function(){
 }
 
 
-NativeImage.prototype._ratio = function(screenOffsetWidth, px){
-    var qmlScreenWidth = gScreenInfo.platformWidth;
-    if(!screenOffsetWidth){
-        screenOffsetWidth = qmlScreenWidth;
-    }
+NativeImage.prototype._ratio = function(px){
+    var ratio = gScreenInfo.density ? gScreenInfo.density : 1;
     try{
         px = parseInt(px);
     }catch(e){
         px = 1;
         console.log('_ratio()  parseInt(px) failed:', px, e);
     }
-    return qmlScreenWidth / screenOffsetWidth * px;
+    return px * ratio;
 }
 
-
-
-NativeImage.prototype._px2dp = function(px){
-    if(!px){
-        return px;
-    }
-    if(typeof px === 'string'){
-        px = parseInt(px);
-    }
-    if(typeof env === 'undefined'){
-        console.log("Error: can not find gScreenInfo");
-        return px;
-    }
-    return parseInt(px / env.dp(1) + 0.5);
-}
-
-
-NativeImage.prototype._getImage = function(handlerId, imageId) {
+NativeImage.prototype._getImage = function(imageId) {
     if(!imageId || !this.images[imageId]){
-        this._fail(handlerId, 9000, "undefined image component: " + imageId);
         return null;
     }
     return this.images[imageId];
 }
 
-NativeImage.prototype._getWebview = function(){
-    return swebviewCache[this.webviewId]
-}
-
 NativeImage.prototype._success = function(handlerId, result){
-    console.log('>>>>>>>>>> _success: ' + handlerId + ' result:' + JSON.stringify(result))
+    logger.verbose('NativeImage _success: %s result: %j', handlerId, result)
     this.webview.onSuccess(handlerId, result)
 }
 
@@ -156,13 +174,14 @@ NativeImage.prototype._fail = function(handlerId, errorCode, errorMsg){
     this.webview.onFailed(handlerId, errorCode, errorMsg)
 }
 
-NativeImage.prototype._subscribe = function(webview, eventType, eventData){
+NativeImage.prototype._subscribe = function(webview, imageId, eventType, eventData){
     var curUrl = webview.object.getCurrentUrl()
 
     webview.pushQueue('subscribe', {
       url: curUrl,
       handlerName: 'onImageEvent',
       result: {
+        id: imageId,
         type: eventType,
         data: eventData
       }

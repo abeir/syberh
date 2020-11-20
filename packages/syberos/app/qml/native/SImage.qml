@@ -13,27 +13,52 @@ import QtQuick 2.5
 import com.syberos.basewidgets 2.0
 
 Image {
+    id: img
 
-    signal imageEvent(string eventType, var eventData)
+    property var imageId
+    property bool useArchors: false
 
-    anchors.top: parent.top
-    anchors.left: parent.left
+    signal imageEvent(var imgId, string eventType, var eventData)
+
+    cache: false
+    asynchronous: true
+    smooth: false
+    visible: true
+
     z: parent.z + 1
+
+    function changeSource(source){
+        img.source = "";
+        img.source = source;
+    }
+
+    Component.onCompleted: {
+        if(useArchors){
+            anchors.top = parent.top
+            anchors.left = parent.left
+        }
+    }
 
     MouseArea {
         anchors.fill: parent
 
+        enabled: parent.visible
+
         onPositionChanged: {
             mouse.accepted = true
-            imageEvent('move', {x: mouse.x, y: mouse.y})
+            imageEvent(imageId, 'move', {x: mouse.x, y: mouse.y})
         }
         onPressed: {
             mouse.accepted = true
-            imageEvent('pressed', {x: mouse.x, y: mouse.y})
+            imageEvent(imageId, 'pressed', {x: mouse.x, y: mouse.y})
         }
         onReleased: {
             mouse.accepted = true
-            imageEvent('released', {x: mouse.x, y: mouse.y})
+            imageEvent(imageId, 'released', {x: mouse.x, y: mouse.y})
+        }
+        onDoubleClicked: {
+            mouse.accepted = true
+            imageEvent(imageId, 'doubleClicked', {x: mouse.x, y: mouse.y})
         }
     }
 }

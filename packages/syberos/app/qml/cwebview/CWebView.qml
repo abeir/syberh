@@ -33,6 +33,10 @@ WebEngineView {
     id: webview
     anchors.fill: parent
 
+    profile:  WebEngineProfile {
+        httpCacheType: WebEngineProfile.NoCache
+    }
+
     /*! 默认对onFeaturePermissionRequested进行处理，如果不需处理，设置为false。 */
     property bool defalutPermission: true
     /*! 是否开启静默授权,默认为false,需手动允许或拒绝。如果为true,则(地理位置获取等)默认允许使用 */

@@ -99,7 +99,7 @@ CPage{
     }
 
     function getNavigationBarHeight() {
-        return sNavigationBar.navigationBarHeight
+        return sNavigationBar.visible ? sNavigationBar.navigationBarHeight : 0
     }
 
     function clearHistory(){
@@ -132,7 +132,7 @@ CPage{
 
     //return the swebview
     function getWebview(){
-        return swebview
+        return root
     }
     //Returns true if the HTML page is currently loading, false otherwise.
     function loading(){
