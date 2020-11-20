@@ -13,23 +13,38 @@ import QtQuick 2.5
 import com.syberos.basewidgets 2.0
 
 Image {
-    id: img
+    id: image
 
     property var imageId
     property bool useArchors: false
+    property string tagId:""
+    property string bakId:""
+
+    property bool hide: false
 
     signal imageEvent(var imgId, string eventType, var eventData)
-
+    
     cache: false
     asynchronous: true
     smooth: false
-    visible: true
-
+    visible:true
     z: parent.z + 1
 
     function changeSource(source){
-        img.source = "";
-        img.source = source;
+        image.source="";
+        image.source=source;
+    }
+
+    onStatusChanged:  {
+        console.log('status',image.status)
+        if(image.hide){
+            return
+        }
+        if (image.status == Image.Ready) {
+            if(!image.visible){
+                imageEvent(imageId, 'ready', { bakId: image.bakId, tagId: image.tagId })
+            }
+        }
     }
 
     Component.onCompleted: {
@@ -42,7 +57,7 @@ Image {
     MouseArea {
         anchors.fill: parent
 
-        enabled: parent.visible
+        // enabled: !image.hide
 
         onPositionChanged: {
             mouse.accepted = true
