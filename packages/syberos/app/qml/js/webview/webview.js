@@ -840,12 +840,14 @@ WebView.prototype.onSubscribe = function (handlerName, result) {
 
   var resObj = {
     handlerName: handlerName,
-    data: {
-      result: result
-    }
+    data: result
   };
   logger.verbose('onSubscribe() res: %j', resObj);
   var webview = this.object;
+  if(result['_toCurrent']){
+    webview = swebviews[swebviews.length - 1].object;
+    delete result['_toCurrent'];
+  }
   webview.evaluateJavaScript(resObj);
 };
 

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>scan</title>
+  <link rel="stylesheet" href="../../common/mui/mui.css" />
+  <link rel="stylesheet" href="../../common/common.css" />
+  <style>
+    .pt0 {
+      margin-top: 1em;
+    }
+    .mui-card-content .mui-input-group {
+        margin: 15px;
+    }
+    .mui-input-group .group-row {
+        padding-top: 10px;
+        padding-left: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="mui-content pt0">
+    <div class="mui-card">
+      <div class="mui-card-header">
+        原生图片
+      </div>
+      <div class="mui-card-content">
+        <div class="mui-input-group">
+            <p>
+              Test content
+            </p>
+            <div id="video-content" style="width:100%;height:230px;background-color: #888888;"></div>
+
+        </div>
+      </div>
+      <div class="mui-card-footer">
+        <div>
+          <button class="mui-btn mui-btn-outlined" onclick="createVideo()">Create</button>
+          <button class="mui-btn mui-btn-outlined" onclick="stopVideo()">Stop</button>
+          <!-- <button class="mui-btn mui-btn-outlined" onclick="startVideo()">Start</button> -->
+          <button class="mui-btn mui-btn-outlined" onclick="showVideo()">Show</button>
+          <button class="mui-btn mui-btn-outlined" onclick="hideVideo()">Hide</button>
+        </div>
+        <div>
+          <button class="mui-btn mui-btn-outlined" onclick="removeVideo()">Remove</button>
+          <button class="mui-btn mui-btn-outlined" onclick="removeAllVideo()">Remove All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="../../common/mui/mui.js"></script>
+  <script type="text/javascript" src="../../lib/syberh.min.js"></script>
+  <script type="text/javascript" src="../../common/common.js"></script>
+  <script type="text/javascript" src="../../lib/vconsole.min.js"></script>
+  <script type="text/javascript" src="./gstRtpVideo.js"></script>
+  <script>
+    var videoId = null;
+
+    window.onload = function(){
+      var vConsole = new VConsole();
+
+      syberh.register(GstRtpVideoPlugin);
+
+      syberh.subscribe('GstRtpVideo', function (result) {
+        console.log('GstRtpVideo  ' + JSON.stringify(result))
+      });
+    }
+
+    function createVideo(){
+      if(videoId){
+        alert('the video has been created');
+        return;
+      }
+      var videoContent = document.getElementById('video-content');
+      var rect = videoContent.getBoundingClientRect();
+      var computedStyle = window.getComputedStyle(videoContent);
+
+      syberh.gstRtpVideo.create({
+        address: '0.0.0.0',
+        port: 15004,
+        width: parseInt(computedStyle.width),
+        height: parseInt(computedStyle.height),
+        offsetTop: rect.top + videoContent.scrollTop,
+        offsetLeft: rect.left + videoContent.scrollLeft,
+        format: 'NV12',
+        pixelWidth: 1920,
+        pixelHeight: 1080,
+        autoPlay: true,
+        success: function (result) {
+          videoId = result.id;
+          console.log(result);
+        },
+        fail: function (error) {
+          console.log(error)
+        }
+      })
+    }
+
+    function stopVideo(){
+      if(!videoId){
+        alert('must be create a video first');
+        return;
+      }
+      syberh.gstRtpVideo.stop({
+        id: videoId,
+        success: function (result) {
+          console.log(result)
+        },
+        fail: function (error) {
+          console.log(error)
+        }
+      })
+    }
+
+    function startVideo(){
+      if(!videoId){
+        alert('must be create a video first');
+        return;
+      }
+      syberh.gstRtpVideo.start({
+        id: videoId,
+        success: function(result){
+          console.log('test change', result)
+        },
+        fail: function (error) {
+          console.log(error)
+        }
+      });
+    }
+
+    function showVideo(){
+      if(!videoId){
+        alert('must be create a video first');
+        return;
+      }
+      syberh.gstRtpVideo.show({
+        id: videoId,
+        success: function(result){
+          console.log('test change', result)
+        },
+        fail: function (error) {
+          console.log(error)
+        }
+      });
+    }
+
+    function hideVideo(){
+      if(!videoId){
+        alert('must be create a video first');
+        return;
+      }
+      syberh.gstRtpVideo.hide({
+        id: videoId,
+        success: function(result){
+          console.log('test change', result)
+        },
+        fail: function (error) {
+          console.log(error)
+        }
+      });
+    }
+
+    function removeVideo(){
+      if(!videoId){
+        alert('must be create a video first');
+        return;
+      }
+      syberh.gstRtpVideo.remove({
+        id: videoId,
+        success: function (result) {
+          videoId = null;
+          console.log(result)
+        },
+        fail: function (error) {
+          console.log(error)
+        }
+      })
+    }
+
+    function removeAllVideo(){
+      syberh.gstRtpVideo.removeAll({
+        success: function (result) {
+          videoId = null;
+          console.log(result)
+        },
+        fail: function (error) {
+          console.log(error)
+        }
+      })
+    }
+
+  </script>
+</body>
+
+</html>
